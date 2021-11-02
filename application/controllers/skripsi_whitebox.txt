@@ -1,0 +1,41 @@
+public function scanTiket($id) {
+
+        $izin = $this->Izin_model->getByID($id);                (1)
+        $scan = $this->Scan_model->getByID($id);
+        $now = new DateTime();
+        $now->setTimezone(new DateTimezone('Asia/Jakarta'));
+        $t  = $now->format('H:i:s');
+        $ip = $this->input->ip_address();
+        $x  = 0;
+
+        if($scan->jam_1 == NULL){                               (2)
+            if(strtotime($t)<=strtotime($izin->jam)) {          (3)           
+                $data = array(                                  (4)
+                    'jam_1'    => $t,
+                    'alasan_1' => NULL,
+                    'ip_1'     => $ip,);
+                $this->Scan_model->onScan($id,$data);}          (5)
+            else {$x=0;                                         (6)
+            }                                                   (7)
+        }
+        else{                                                   
+            if($scan->jam_2 == NULL){                           (8)
+                if($ip != $scan->ip_1) {                        (9)
+                    $data = array(                              (10)
+                        'jam_2'    => $t,
+                        'alasan_2' => NULL,
+                        'ip_2'     => $ip);
+                    $this->Scan_model->onScan($id,$data);}      (11)
+                else {$x = 1;                                   (12)
+                }                                               (13)
+            }
+            else{$x=0;                                          (14)
+            }                                                   (15)
+        }                                                       (16)
+        $data = array (                                         (17)
+            'izin' => $this->Izin_model->getByID($id),
+            'scan' => $this->Scan_model->getByID($id),
+            'now'  => $t,
+            'ip'   => $x);
+        $this->load->view("tiket_scan", $data);                 (18)
+    }
